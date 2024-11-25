@@ -13,7 +13,7 @@ project-root/
 ```
 
 #
-### Features:
+### Features
 
 This application provides an API to fetch GitHub user statistics, deployed using Vercel.
 
@@ -22,12 +22,12 @@ This application provides an API to fetch GitHub user statistics, deployed using
 - Displays recent public contributions.
 
 #
-### Requirements:
+### Requirements
 
 Python 3.8+ Flask Requests Vercel account
 
 #
-### Setup Instructions:
+### Setup Instructions
 
 ```
 Clone the repository: git clone https://github.com/your-username/github-stats-app.git
@@ -40,19 +40,7 @@ Set up a .env file in the env/ directory with your GitHub token: GITHUB_TOKEN=yo
 ```
 
 #
-### Testing:
-
-Run tests using pytest: ```pytest tests/```
-
-#
-### Deployment:
-
-Deploy the app on Vercel: ```vercel --prod```
-
-Access the API at: ```https://your-project.vercel.app/api/github-stats?username=<GitHub_username>```
-
-#
-### API Endpoints:
+### API Endpoints
 
 GET /api/github-stats: Fetches GitHub user data. 
 
