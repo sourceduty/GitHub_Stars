@@ -63,7 +63,7 @@ Response Format: JSON object with user profile, repositories, and contributions.
 #
 ### Related Links
 
-[hatGPT](https://github.com/sourceduty/ChatGPT)
+[GitHub](https://github.com/sourceduty/GitHub)
 
 ***
 Copyright (C) 2024, Sourceduty - All Rights Reserved.
