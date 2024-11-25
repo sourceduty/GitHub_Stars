@@ -1,3 +1,5 @@
+# GitHub Stars V1.0
+
 from flask import Flask, request, render_template_string, jsonify
 
 app = Flask(__name__)
@@ -52,6 +54,13 @@ def github_stats():
 
     output = f"Repository: {stats['repository']}\nStars: {stats['stars']}\nForks: {stats['forks']}"
     return render_template_string(HTML_TEMPLATE, output=output)
+
+@app.route("/status", methods=["GET"])
+def status():
+    """
+    A default route to check if the app is running.
+    """
+    return "GitHub Stars Tracker is running!"
 
 if __name__ == "__main__":
     app.run(debug=True)
