@@ -1,6 +1,6 @@
 ![GitHub_Stars_Banner](https://github.com/user-attachments/assets/6e20d313-5d42-48b2-ad03-31c29acf9e49)
 
-> API to fetch GitHub user statistics, deployed using Vercel.
+> API to fetch GitHub user statistics, deployed using Vercel. Experimental development.
 #
 
 ```
