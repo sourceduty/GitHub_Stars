@@ -17,8 +17,6 @@ The development process on Vercel leverages its serverless infrastructure, which
 #
 ### Vercel
 
-![Hello Washington](https://github.com/user-attachments/assets/56dbb2dc-09c2-4ae2-8461-efe36fa7ef4d)
-
 Vercel is a cloud platform for static sites and Serverless Functions, which integrates seamlessly with GitHub to provide a streamlined workflow for deploying web applications. By linking a GitHub repository to a Vercel project, developers can easily deploy their applications every time they push code changes to the repository. For example, once a GitHub repository is connected, Vercel automatically detects changes and builds the project, making it accessible via a live URL. The integration is designed to be intuitive, allowing for fast deployments with minimal configuration. After linking your GitHub account, you simply select the repository to deploy, and Vercel takes care of the rest.
 
 For instance, to deploy a simple React app on Vercel using GitHub, you would first push your project to a GitHub repository. Then, on the Vercel dashboard, you connect the repository by clicking the "New Project" button and selecting the repository you want to deploy. Vercel automatically detects the build settings for common frameworks like React or Next.js, and in a few minutes, your app is live. For more advanced use cases, you can configure Vercel's deployment settings through a vercel.json file in your repository, allowing you to specify routes, serverless functions, and environmental variables to control the deployment process further.
@@ -45,10 +43,6 @@ This application provides an API to fetch GitHub user statistics, deployed using
 
 #
 ![vercel_login](https://github.com/user-attachments/assets/74173269-e916-4509-9b64-95a1b5baf4d5)
-
-#
-
-> Alex: "*I need to come back to this.*"
 
 #
 ### Related Links
