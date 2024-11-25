@@ -1,6 +1,6 @@
 ![GitHub_Stars_Banner](https://github.com/user-attachments/assets/6e20d313-5d42-48b2-ad03-31c29acf9e49)
 
-> API to fetch GitHub user statistics, deployed using Vercel. Experimental development.
+> API to fetch GitHub user statistics and stars, deployed using Vercel. Experimental development.
 #
 
 This program, GitHub Stars Tracker, is designed to provide an intuitive interface for fetching and displaying repository statistics from GitHub. Users can input a repository name (in the format owner/repo) and retrieve simulated stats such as stars and forks, which are presented in a clear text box. The program is built using Flask, a lightweight Python web framework, and includes both an API endpoint and a user-friendly HTML form to facilitate interaction. The /api/github-stats route serves as the core API endpoint, while the home route (/) renders an input form with a text area for displaying output. The application also includes a /status endpoint, making it easy to check if the program is running.
