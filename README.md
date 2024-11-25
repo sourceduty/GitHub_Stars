@@ -28,6 +28,8 @@ project-root/
 #
 ### Features
 
+![vercel_login](https://github.com/user-attachments/assets/74173269-e916-4509-9b64-95a1b5baf4d5)
+
 This application provides an API to fetch GitHub user statistics, deployed using Vercel.
 
 - Fetches user profile data from GitHub.
