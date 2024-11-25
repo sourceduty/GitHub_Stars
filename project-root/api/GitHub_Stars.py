@@ -1,6 +1,5 @@
 from flask import Flask, request, render_template, jsonify, send_from_directory
 import requests
-import os
 
 app = Flask(__name__)
 
@@ -10,7 +9,7 @@ GITHUB_API_URL = "https://api.github.com"
 @app.route("/")
 def home():
     """
-    Render the home page.
+    Render the home page with a form for user input.
     """
     return render_template("index.html", output="Welcome to the GitHub Stars Tracker!")
 
@@ -19,20 +18,25 @@ def github_stats():
     """
     Fetch repository statistics from the GitHub API.
     """
-    repo = request.args.get("repo", None)
-    token = request.args.get("token", None)
+    repo = request.args.get("repo")
+    token = request.args.get("token")
 
+    # Validate the repository input
     if not repo:
         return render_template("error.html", message="Please provide a valid repository name (e.g., owner/repo).")
 
+    # Set up headers for GitHub API requests
     headers = {"Authorization": f"token {token}"} if token else {}
     url = f"{GITHUB_API_URL}/repos/{repo}"
 
-    response = requests.get(url, headers=headers)
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
 
-    if response.status_code == 200:
+        # Parse the response data
         data = response.json()
         contributors = fetch_contributors(repo, headers)
+
         return render_template(
             "index.html",
             output=f"Repository: {data['full_name']}\n"
@@ -45,55 +49,63 @@ def github_stats():
                    f"Owner: {data['owner']['login']}\n\n"
                    f"Top Contributors: {', '.join(contributors) if contributors else 'No contributors available.'}"
         )
-    elif response.status_code == 404:
-        return render_template("error.html", message=f"Repository '{repo}' not found.")
-    else:
-        return render_template("error.html", message=f"Error fetching data. Status Code: {response.status_code}")
+    except requests.exceptions.HTTPError as http_err:
+        if response.status_code == 404:
+            return render_template("error.html", message=f"Repository '{repo}' not found.")
+        else:
+            return render_template("error.html", message=f"HTTP error occurred: {http_err}")
+    except Exception as e:
+        return render_template("error.html", message=f"An error occurred: {e}")
 
 @app.route("/api/rate-limit", methods=["GET"])
 def rate_limit():
     """
     Check GitHub API rate limits.
     """
-    token = request.args.get("token", None)
+    token = request.args.get("token")
     headers = {"Authorization": f"token {token}"} if token else {}
     url = f"{GITHUB_API_URL}/rate_limit"
 
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
         data = response.json()["rate"]
+
         return jsonify({
             "Limit": data["limit"],
             "Remaining": data["remaining"],
             "Reset": data["reset"]
         })
-    else:
-        return jsonify({"error": f"Error fetching rate limit. Status Code: {response.status_code}"})
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {e}"})
 
 @app.route("/favicon.ico")
 def favicon_ico():
     """
-    Serve favicon.ico if requested.
+    Serve the favicon.ico file.
     """
     return send_from_directory("static", "favicon.ico", mimetype="image/vnd.microsoft.icon")
 
 @app.route("/favicon.png")
 def favicon_png():
     """
-    Serve favicon.png if requested.
+    Serve the favicon.png file.
     """
     return send_from_directory("static", "favicon.png", mimetype="image/png")
 
 def fetch_contributors(repo, headers):
     """
-    Fetch top contributors for a GitHub repository.
+    Fetch the top contributors for a GitHub repository.
     """
-    response = requests.get(f"{GITHUB_API_URL}/repos/{repo}/contributors", headers=headers)
-    if response.status_code == 200:
+    url = f"{GITHUB_API_URL}/repos/{repo}/contributors"
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
         contributors = [contributor["login"] for contributor in response.json()]
         return contributors[:5]  # Limit to top 5 contributors
-    return None
+    except Exception:
+        return None
 
 if __name__ == "__main__":
     app.run(debug=True)
