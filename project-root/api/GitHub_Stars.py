@@ -22,6 +22,7 @@ def github_stats():
 
     if response.status_code == 200:
         data = response.json()
+        contributors = fetch_contributors(repo, headers)
         return render_template(
             "index.html",
             output=f"Repository: {data['full_name']}\n"
@@ -31,7 +32,8 @@ def github_stats():
                    f"Watchers: {data['watchers_count']}\n"
                    f"Open Issues: {data['open_issues_count']}\n"
                    f"Default Branch: {data['default_branch']}\n"
-                   f"Owner: {data['owner']['login']}\n"
+                   f"Owner: {data['owner']['login']}\n\n"
+                   f"Top Contributors: {', '.join(contributors) if contributors else 'No contributors available.'}"
         )
     elif response.status_code == 404:
         return render_template("error.html", message=f"Repository '{repo}' not found.")
@@ -53,6 +55,16 @@ def rate_limit():
         })
     else:
         return jsonify({"error": f"Error fetching rate limit. Status Code: {response.status_code}"})
+
+def fetch_contributors(repo, headers):
+    """
+    Fetch contributors for a GitHub repository.
+    """
+    response = requests.get(f"{GITHUB_API_URL}/repos/{repo}/contributors", headers=headers)
+    if response.status_code == 200:
+        contributors = [contributor["login"] for contributor in response.json()]
+        return contributors[:5]  # Limit to top 5 contributors
+    return None
 
 if __name__ == "__main__":
     app.run(debug=True)
