@@ -1,24 +1,34 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, send_from_directory
 import requests
+import os
 
 app = Flask(__name__)
 
+# GitHub API Base URL
 GITHUB_API_URL = "https://api.github.com"
 
-@app.route("/", methods=["GET"])
+@app.route("/")
 def home():
-    return render_template("index.html")
+    """
+    Render the home page.
+    """
+    return render_template("index.html", output="Welcome to the GitHub Stars Tracker!")
 
 @app.route("/api/github-stats", methods=["GET"])
 def github_stats():
-    repo = request.args.get("repo")
-    token = request.args.get("token")
+    """
+    Fetch repository statistics from the GitHub API.
+    """
+    repo = request.args.get("repo", None)
+    token = request.args.get("token", None)
 
     if not repo:
-        return render_template("error.html", message="Please provide a repository name (e.g., owner/repo).")
+        return render_template("error.html", message="Please provide a valid repository name (e.g., owner/repo).")
 
     headers = {"Authorization": f"token {token}"} if token else {}
-    response = requests.get(f"{GITHUB_API_URL}/repos/{repo}", headers=headers)
+    url = f"{GITHUB_API_URL}/repos/{repo}"
+
+    response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
         data = response.json()
@@ -42,23 +52,35 @@ def github_stats():
 
 @app.route("/api/rate-limit", methods=["GET"])
 def rate_limit():
-    token = request.args.get("token")
+    """
+    Check GitHub API rate limits.
+    """
+    token = request.args.get("token", None)
     headers = {"Authorization": f"token {token}"} if token else {}
-    response = requests.get(f"{GITHUB_API_URL}/rate_limit", headers=headers)
+    url = f"{GITHUB_API_URL}/rate_limit"
+
+    response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
-        rate = response.json()["rate"]
+        data = response.json()["rate"]
         return jsonify({
-            "Limit": rate["limit"],
-            "Remaining": rate["remaining"],
-            "Reset": rate["reset"]
+            "Limit": data["limit"],
+            "Remaining": data["remaining"],
+            "Reset": data["reset"]
         })
     else:
         return jsonify({"error": f"Error fetching rate limit. Status Code: {response.status_code}"})
 
+@app.route("/favicon.ico")
+def favicon():
+    """
+    Serve the favicon to prevent errors in browser requests.
+    """
+    return send_from_directory("static", "favicon.ico", mimetype="image/vnd.microsoft.icon")
+
 def fetch_contributors(repo, headers):
     """
-    Fetch contributors for a GitHub repository.
+    Fetch top contributors for a GitHub repository.
     """
     response = requests.get(f"{GITHUB_API_URL}/repos/{repo}/contributors", headers=headers)
     if response.status_code == 200:
