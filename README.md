@@ -27,8 +27,15 @@ For instance, to deploy a simple React app on Vercel using GitHub, you would fir
 project-root/
 ├── api/
 │   └── GitHub_Stars.py
+├── templates/
+│   ├── index.html
+│   └── error.html
+├── static/
+│   └── style.css
+├── wsgi.py
 ├── vercel.json
-└── requirements.txt
+├── runtime.txt
+├── requirements.txt
 ── README.md
 ```
 
