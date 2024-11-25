@@ -3,6 +3,14 @@
 > API to fetch GitHub user statistics, deployed using Vercel. Experimental development.
 #
 
+This program, GitHub Stars Tracker, is designed to provide an intuitive interface for fetching and displaying repository statistics from GitHub. Users can input a repository name (in the format owner/repo) and retrieve simulated stats such as stars and forks, which are presented in a clear text box. The program is built using Flask, a lightweight Python web framework, and includes both an API endpoint and a user-friendly HTML form to facilitate interaction. The /api/github-stats route serves as the core API endpoint, while the home route (/) renders an input form with a text area for displaying output. The application also includes a /status endpoint, making it easy to check if the program is running.
+
+The design emphasizes simplicity and ease of use, with features like dynamic output rendering and a clear separation of routes for specific tasks. However, the stats fetching logic is currently simulated and needs to be connected to the GitHub API for real-time data. The HTML interface is a starting point for more advanced user interaction, such as sorting, filtering, or visualizing stats in charts. This foundational program showcases modularity and adaptability, paving the way for further enhancements.
+
+The development process on Vercel leverages its serverless infrastructure, which simplifies deployment but requires specific configurations to support Python applications like this one. During partial development, challenges such as compatibility between Flask and Vercel's serverless functions arose. The program needs refinements to align with Vercel's environment, including routing fixes and dependency adjustments. To achieve full functionality, integration with GitHub's REST API or GraphQL API is required, allowing users to fetch actual data. Expanding the program could include adding authentication for private repositories, handling rate limits, and improving the UI with real-time updates. These improvements will transform the program into a robust tool for GitHub repository analysis.
+
+#
+
 ```
 project-root/
 ├── api/
