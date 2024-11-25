@@ -14,12 +14,14 @@ github-stats-app/
     └── requirements.txt        # Python dependencies
 ```
 
-This application provides an API to fetch GitHub user statistics, deployed using Vercel.
-
 #
 ### Features:
 
-Fetches user profile data from GitHub. Lists repositories sorted by stars. Displays recent public contributions.
+This application provides an API to fetch GitHub user statistics, deployed using Vercel.
+
+- Fetches user profile data from GitHub.
+- Lists repositories sorted by stars.
+- Displays recent public contributions.
 
 #
 ### Requirements:
