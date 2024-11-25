@@ -4,14 +4,12 @@
 #
 
 ```
-github-stats-app/
-    ├── api/
-    │   └── github-stats.py     # Main API logic, compatible with Vercel
-    ├── .env                    # Environment variables for local testing (e.g., GITHUB_TOKEN)
-    ├── .gitignore              # Files and directories to ignore in Git
-    ├── README.md               # Documentation for the project
-    ├── vercel.json             # Vercel configuration file
-    └── requirements.txt        # Python dependencies
+project-root/
+├── api/
+│   └── GitHub_Stars.py
+├── vercel.json
+└── requirements.txt
+── README.md               # Documentation for the project
 ```
 
 #
