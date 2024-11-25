@@ -13,8 +13,8 @@ def home():
     """
     return render_template("index.html", output="Welcome to the GitHub Stars Tracker!")
 
-@app.route("/api/github-stats", methods=["GET"])
-def github_stats():
+@app.route("/api/github_stars", methods=["GET"])
+def github_stars():
     """
     Fetch repository statistics from the GitHub API.
     """
