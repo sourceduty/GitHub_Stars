@@ -72,11 +72,18 @@ def rate_limit():
         return jsonify({"error": f"Error fetching rate limit. Status Code: {response.status_code}"})
 
 @app.route("/favicon.ico")
-def favicon():
+def favicon_ico():
     """
-    Serve the favicon to prevent errors in browser requests.
+    Serve favicon.ico if requested.
     """
     return send_from_directory("static", "favicon.ico", mimetype="image/vnd.microsoft.icon")
+
+@app.route("/favicon.png")
+def favicon_png():
+    """
+    Serve favicon.png if requested.
+    """
+    return send_from_directory("static", "favicon.png", mimetype="image/png")
 
 def fetch_contributors(repo, headers):
     """
