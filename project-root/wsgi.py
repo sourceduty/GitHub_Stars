@@ -1,1 +1,1 @@
-from GitHub_Stars import app as application
+from api.GitHub_Stars import app as application
