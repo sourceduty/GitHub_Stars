@@ -55,6 +55,7 @@ Access the API at: ```https://your-project.vercel.app/api/github-stats?username=
 ### API Endpoints:
 
 GET /api/github-stats: Fetches GitHub user data. 
+
 Query Parameters: username (required): GitHub username to fetch data for.
 
 Response Format: JSON object with user profile, repositories, and contributions.
