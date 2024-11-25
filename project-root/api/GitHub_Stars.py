@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, jsonify, send_from_directory
 import requests
 
+# Initialize Flask app
 app = Flask(__name__)
 
 # GitHub API Base URL
@@ -9,23 +10,21 @@ GITHUB_API_URL = "https://api.github.com"
 @app.route("/")
 def home():
     """
-    Render the home page with a form for user input.
+    Render the home page with a welcome message.
     """
     return render_template("index.html", output="Welcome to the GitHub Stars Tracker!")
 
 @app.route("/api/github_stars", methods=["GET"])
 def github_stars():
     """
-    Fetch repository statistics from the GitHub API.
+    Fetch GitHub repository statistics.
     """
     repo = request.args.get("repo")
     token = request.args.get("token")
 
-    # Validate the repository input
     if not repo:
         return render_template("error.html", message="Please provide a valid repository name (e.g., owner/repo).")
 
-    # Set up headers for GitHub API requests
     headers = {"Authorization": f"token {token}"} if token else {}
     url = f"{GITHUB_API_URL}/repos/{repo}"
 
@@ -33,7 +32,6 @@ def github_stars():
         response = requests.get(url, headers=headers)
         response.raise_for_status()
 
-        # Parse the response data
         data = response.json()
         contributors = fetch_contributors(repo, headers)
 
@@ -55,7 +53,7 @@ def github_stars():
         else:
             return render_template("error.html", message=f"HTTP error occurred: {http_err}")
     except Exception as e:
-        return render_template("error.html", message=f"An error occurred: {e}")
+        return render_template("error.html", message=f"An unexpected error occurred: {e}")
 
 @app.route("/api/rate-limit", methods=["GET"])
 def rate_limit():
@@ -69,12 +67,12 @@ def rate_limit():
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
-        data = response.json()["rate"]
+        rate_data = response.json()["rate"]
 
         return jsonify({
-            "Limit": data["limit"],
-            "Remaining": data["remaining"],
-            "Reset": data["reset"]
+            "Limit": rate_data["limit"],
+            "Remaining": rate_data["remaining"],
+            "Reset": rate_data["reset"]
         })
     except Exception as e:
         return jsonify({"error": f"An error occurred: {e}"})
