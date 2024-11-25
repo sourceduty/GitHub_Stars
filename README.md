@@ -9,7 +9,7 @@ project-root/
 │   └── GitHub_Stars.py
 ├── vercel.json
 └── requirements.txt
-── README.md               # Documentation for the project
+── README.md
 ```
 
 #
