@@ -1,18 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Stars Tracker</title>
+    <title>GitHub Repository Stats</title>
 </head>
 <body>
-    <h1>GitHub Stars Tracker</h1>
-    <form action="/stats" method="POST">
+    <h1>Check GitHub Repository Stats</h1>
+    <form method="POST" action="/stats">
         <label for="owner">Repository Owner:</label>
-        <input type="text" id="owner" name="owner" required><br><br>
+        <input type="text" id="owner" name="owner" required>
+        <br>
         <label for="repo">Repository Name:</label>
-        <input type="text" id="repo" name="repo" required><br><br>
-        <button type="submit">Get Stats</button>
+        <input type="text" id="repo" name="repo" required>
+        <br>
+        <button type="submit">Fetch Stats</button>
     </form>
 </body>
 </html>
