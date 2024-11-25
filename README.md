@@ -35,33 +35,6 @@ This application provides an API to fetch GitHub user statistics, deployed using
 - Displays recent public contributions.
 
 #
-### Requirements
-
-Python 3.8+ Flask Requests Vercel account
-
-#
-### Setup Instructions
-
-```
-Clone the repository: git clone https://github.com/your-username/github-stats-app.git
-
-Navigate to the project directory: cd github-stats-app
-
-Install dependencies: pip install -r requirements.txt
-
-Set up a .env file in the env/ directory with your GitHub token: GITHUB_TOKEN=your_github_personal_access_token
-```
-
-#
-### API Endpoints
-
-GET /api/github-stats: Fetches GitHub user data. 
-
-Query Parameters: username (required): GitHub username to fetch data for.
-
-Response Format: JSON object with user profile, repositories, and contributions.
-
-#
 ### Related Links
 
 [GitHub](https://github.com/sourceduty/GitHub)
