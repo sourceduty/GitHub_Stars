@@ -1,34 +1,8 @@
-# Python cache and virtual environments
-__pycache__/
-*.py[cod]
+*.pyc
 *.pyo
 *.pyd
-env/
-venv/
-ENV/
-.venv/
-
-# Vercel configuration folder
-.vercel
-
-# OS-specific files
-.DS_Store
-Thumbs.db
-
-# Editor-specific files
-.idea/
-.vscode/
-
-# Logs
-*.log
-*.out
-*.err
-
-# Python environment files
-*.env
-.env.*
-
-# Miscellaneous
-*.swp
-*.swo
-*.bak
+__pycache__
+instance/
+.webassets-cache
+.env
+.vscode
