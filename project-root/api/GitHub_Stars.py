@@ -1,10 +1,12 @@
-# GitHub Stars V1.0
-
 from flask import Flask, request, render_template_string, jsonify
+import requests
+import os
 
 app = Flask(__name__)
 
-# HTML Template with a text box area for output
+GITHUB_API_URL = "https://api.github.com"
+
+# HTML Template with enhanced features
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -18,10 +20,12 @@ HTML_TEMPLATE = """
     <form method="GET" action="/api/github-stats">
         <label for="repo">Enter GitHub Repository (e.g., owner/repo):</label><br><br>
         <input type="text" id="repo" name="repo" placeholder="e.g., tensorflow/tensorflow"><br><br>
+        <label for="token">Enter Personal Access Token (optional):</label><br><br>
+        <input type="text" id="token" name="token" placeholder="GitHub Personal Access Token"><br><br>
         <button type="submit">Fetch Stats</button>
     </form>
     <br>
-    <textarea id="output" rows="10" cols="50" readonly>{{ output }}</textarea>
+    <textarea id="output" rows="15" cols="80" readonly>{{ output }}</textarea>
 </body>
 </html>
 """
@@ -36,31 +40,69 @@ def home():
 @app.route("/api/github-stats", methods=["GET"])
 def github_stats():
     """
-    Fetch GitHub repository stats and display them.
+    Fetch GitHub repository stats using the GitHub API.
     """
     repo = request.args.get("repo", None)
+    token = request.args.get("token", None)
+
     if not repo:
         return render_template_string(
             HTML_TEMPLATE,
-            output="Please provide a valid GitHub repository name (e.g., owner/repo)."
+            output="Error: Please provide a valid GitHub repository name (e.g., owner/repo)."
         )
 
-    # Simulate fetching GitHub stats (replace with actual API call if needed)
-    stats = {
-        "repository": repo,
-        "stars": 1500,  # Simulated data
-        "forks": 300,   # Simulated data
-    }
+    headers = {}
+    if token:
+        headers["Authorization"] = f"token {token}"
 
-    output = f"Repository: {stats['repository']}\nStars: {stats['stars']}\nForks: {stats['forks']}"
+    url = f"{GITHUB_API_URL}/repos/{repo}"
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        output = (
+            f"Repository: {data['full_name']}\n"
+            f"Description: {data.get('description', 'No description available')}\n"
+            f"Stars: {data['stargazers_count']}\n"
+            f"Forks: {data['forks_count']}\n"
+            f"Watchers: {data['watchers_count']}\n"
+            f"Open Issues: {data['open_issues_count']}\n"
+            f"Default Branch: {data['default_branch']}\n"
+            f"Owner: {data['owner']['login']}\n"
+        )
+    elif response.status_code == 404:
+        output = f"Error: Repository '{repo}' not found."
+    else:
+        output = f"Error: Unable to fetch data. Status Code: {response.status_code}"
+
     return render_template_string(HTML_TEMPLATE, output=output)
 
-@app.route("/status", methods=["GET"])
-def status():
+@app.route("/api/rate-limit", methods=["GET"])
+def rate_limit():
     """
-    A default route to check if the app is running.
+    Check the GitHub API rate limit.
     """
-    return "GitHub Stars Tracker is running!"
+    token = request.args.get("token", None)
+    headers = {}
+    if token:
+        headers["Authorization"] = f"token {token}"
+
+    url = f"{GITHUB_API_URL}/rate_limit"
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        rate = data['rate']
+        output = (
+            f"Rate Limit:\n"
+            f"Limit: {rate['limit']}\n"
+            f"Remaining: {rate['remaining']}\n"
+            f"Reset: {rate['reset']}\n"
+        )
+    else:
+        output = f"Error: Unable to fetch rate limit. Status Code: {response.status_code}"
+
+    return render_template_string(HTML_TEMPLATE, output=output)
 
 if __name__ == "__main__":
     app.run(debug=True)
