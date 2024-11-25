@@ -1,100 +1,198 @@
-import os
-import json
+from flask import Flask, request, jsonify, render_template_string
 import requests
-from flask import Flask, request, jsonify
+import os
 
-# Initialize the Flask application
 app = Flask(__name__)
 
-# GitHub API URL
-GITHUB_API_URL = 'https://api.github.com'
+# GitHub API Base URL
+GITHUB_API_URL = "https://api.github.com"
 
-# Load GitHub token from environment variables
-GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+# HTML Templates for the Web Interface
+INDEX_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Stars Tracker</title>
+</head>
+<body>
+    <h1>GitHub Stars Tracker</h1>
+    <form action="/github-stats" method="POST">
+        <label for="username">GitHub Username:</label>
+        <input type="text" id="username" name="username" required>
+        <button type="submit">Get Stats</button>
+    </form>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>
+"""
 
-# Function to get user data
-def get_user_data(username):
-    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
-    url = f'{GITHUB_API_URL}/users/{username}'
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return {"error": response.status_code, "message": response.text}
+STATS_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Stats</title>
+</head>
+<body>
+    <h1>GitHub Stats for {{ user.login }}</h1>
+    <p>Name: {{ user.name }}</p>
+    <p>Bio: {{ user.bio }}</p>
+    <p>Followers: {{ user.followers }}</p>
+    <p>Following: {{ user.following }}</p>
+    <p>Total Stars: {{ total_stars }}</p>
+    <h2>Top Repositories</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Stars</th>
+                <th>Forks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for repo in repositories %}
+                <tr>
+                    <td>{{ repo.name }}</td>
+                    <td>{{ repo.stars }}</td>
+                    <td>{{ repo.forks }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+"""
 
-# Function to get user repositories
-def get_user_repositories(username):
-    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
-    url = f'{GITHUB_API_URL}/users/{username}/repos'
-    all_repos = []
-    page = 1
-    while True:
-        response = requests.get(f"{url}?page={page}", headers=headers)
-        if response.status_code == 200:
-            repos = response.json()
-            if not repos:
-                break
-            all_repos.extend(repos)
-            page += 1
-        else:
-            return {"error": response.status_code, "message": response.text}
-    
-    sorted_repos = sorted(all_repos, key=lambda repo: repo['stargazers_count'], reverse=True)
-    return sorted_repos
+# Route: Web Interface
+@app.route('/')
+def home():
+    return render_template_string(INDEX_HTML)
 
-# Function to get user contributions
-def get_user_contributions(username):
-    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
-    url = f'{GITHUB_API_URL}/users/{username}/events/public'
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return {"error": response.status_code, "message": response.text}
-
-# API endpoint to fetch user statistics with enhanced error logging
+# Route: Fetch GitHub Stats (API Endpoint)
 @app.route('/api/github-stats', methods=['GET'])
-def github_stats():
+def get_github_stats():
     username = request.args.get('username')
+
     if not username:
-        return jsonify({"error": "Username is required"}), 400
-    
-    user_data = get_user_data(username)
-    if "error" in user_data:
-        return jsonify(user_data), user_data["error"]
+        return jsonify({"error": "Missing 'username' query parameter"}), 400
 
-    repositories = get_user_repositories(username)
-    if isinstance(repositories, dict) and "error" in repositories:
-        return jsonify(repositories), repositories["error"]
+    token = os.getenv("GITHUB_TOKEN")
+    if not token:
+        return jsonify({"error": "GitHub token not configured"}), 500
 
-    contributions = get_user_contributions(username)
-    if isinstance(contributions, dict) and "error" in contributions:
-        return jsonify(contributions), contributions["error"]
-    
-    # Calculate total stars across all repositories
-    total_stars = sum(repo['stargazers_count'] for repo in repositories)
-
-    report = {
-        "user": {
-            "login": user_data.get("login"),
-            "name": user_data.get("name"),
-            "bio": user_data.get("bio"),
-            "public_repos": user_data.get("public_repos"),
-            "followers": user_data.get("followers"),
-            "following": user_data.get("following")
-        },
-        "repositories": [
-            {"name": repo["name"], "stars": repo["stargazers_count"], "forks": repo["forks_count"]}
-            for repo in repositories
-        ],
-        "total_stars": total_stars,
-        "recent_contributions": [
-            {"type": event["type"], "created_at": event["created_at"]}
-            for event in contributions[:5]
-        ]
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json"
     }
-    return jsonify(report)
 
-# Vercel requires a main handler
-def handler(request, context=None):
-    return app(request, context)
+    try:
+        # Fetch user data
+        user_response = requests.get(f"{GITHUB_API_URL}/users/{username}", headers=headers)
+        if user_response.status_code != 200:
+            return jsonify({
+                "error": "Failed to fetch user data",
+                "details": user_response.json()
+            }), user_response.status_code
+
+        user_data = user_response.json()
+
+        # Fetch repositories
+        repos_response = requests.get(f"{GITHUB_API_URL}/users/{username}/repos", headers=headers, params={"per_page": 100})
+        if repos_response.status_code != 200:
+            return jsonify({
+                "error": "Failed to fetch repositories",
+                "details": repos_response.json()
+            }), repos_response.status_code
+
+        repos_data = repos_response.json()
+
+        # Summarize repository stats
+        repos_summary = []
+        total_stars = 0
+        for repo in repos_data:
+            stars = repo.get("stargazers_count", 0)
+            forks = repo.get("forks_count", 0)
+            repos_summary.append({
+                "name": repo.get("name"),
+                "stars": stars,
+                "forks": forks
+            })
+            total_stars += stars
+
+        # Sort repositories by stars
+        repos_summary = sorted(repos_summary, key=lambda x: x["stars"], reverse=True)
+
+        return jsonify({
+            "user": {
+                "login": user_data.get("login"),
+                "name": user_data.get("name"),
+                "bio": user_data.get("bio"),
+                "followers": user_data.get("followers"),
+                "following": user_data.get("following"),
+                "public_repos": user_data.get("public_repos")
+            },
+            "total_stars": total_stars,
+            "repositories": repos_summary[:10]  # Limit to top 10 repositories
+        })
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": "An error occurred while fetching data", "details": str(e)}), 500
+
+# Route: Fetch and Display Stats (Web)
+@app.route('/github-stats', methods=['POST'])
+def display_stats():
+    username = request.form.get('username')
+
+    if not username:
+        return render_template_string(INDEX_HTML, error="Please provide a GitHub username")
+
+    token = os.getenv("GITHUB_TOKEN")
+    if not token:
+        return render_template_string(INDEX_HTML, error="GitHub token is not configured")
+
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    # Fetch user and repository data
+    user_url = f"{GITHUB_API_URL}/users/{username}"
+    repos_url = f"{GITHUB_API_URL}/users/{username}/repos"
+
+    try:
+        user_response = requests.get(user_url, headers=headers)
+        repos_response = requests.get(repos_url, headers=headers, params={"per_page": 100})
+
+        if user_response.status_code != 200 or repos_response.status_code != 200:
+            return render_template_string(
+                INDEX_HTML,
+                error="Failed to fetch data from GitHub"
+            )
+
+        user_data = user_response.json()
+        repos_data = repos_response.json()
+
+        total_stars = sum(repo.get("stargazers_count", 0) for repo in repos_data)
+        repos_summary = sorted(
+            [{"name": repo["name"], "stars": repo["stargazers_count"], "forks": repo["forks_count"]} for repo in repos_data],
+            key=lambda x: x["stars"],
+            reverse=True
+        )
+
+        return render_template_string(
+            STATS_HTML,
+            user=user_data,
+            total_stars=total_stars,
+            repositories=repos_summary[:10]
+        )
+
+    except requests.exceptions.RequestException as e:
+        return render_template_string(INDEX_HTML, error="An error occurred while fetching data", details=str(e))
+
+if __name__ == '__main__':
+    app.run(debug=True)
