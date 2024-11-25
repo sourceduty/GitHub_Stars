@@ -2,7 +2,7 @@
   "version": 2,
   "routes": [
     {
-      "src": "/api/github-stats",
+      "src": "/(.*)",
       "dest": "wsgi.py"
     }
   ]
