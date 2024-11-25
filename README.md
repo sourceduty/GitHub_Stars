@@ -42,6 +42,65 @@ project-root/
 ```
 
 #
+### Features
+
+1. Home Page:
+
+- Displays a welcome message and a form for users to enter a GitHub repository name and an optional API token.
+
+2. Fetch GitHub Repository Stats:
+
+- Endpoint: `/api/github_stars`
+- Fetches details about a GitHub repository:
+ - Repository name and description.
+ - Star count, fork count, watcher count.
+ - Open issues count, default branch, and owner name.
+ - Top 5 contributors.
+
+3. Rate Limit Check:
+
+- Endpoint: `/api/rate-limit`
+- Displays the GitHub API rate limits:
+ - Total limit, remaining calls, and reset time.
+
+4. Error Handling:
+
+- Provides clear error messages for:
+ - Invalid or missing repository names.
+ - Unauthorized requests (e.g., invalid or missing token).
+ - Non-existent repositories (404 error).
+ - HTTP and connection errors.
+
+5. Static File Serving:
+
+- Handles requests for `/favicon.ico` and `/favicon.png`.
+- Serves favicon files to prevent unnecessary error logs in browsers.
+
+6. Contributor Information:
+
+- Fetches the top 5 contributors for a repository using the GitHub API.
+
+7. Token Authentication Support:
+
+- Optional GitHub token for authenticated requests to:
+ - Bypass API rate limits.
+ - Access private repositories.
+
+8. API Integration:
+
+- Uses the GitHub API (`https://api.github.com`) for all repository and contributor data.
+
+9. Dynamic Web Pages:
+
+- `index.html`: Displays fetched repository stats.
+- `error.html`: Shows detailed error messages for failed requests.
+
+10. Compatibility:
+
+- Fully deployable to Vercel using `wsgi.py` and `vercel.json`.
+- Local testing support with Flask's built-in server.
+
+#
 ![vercel_login](https://github.com/user-attachments/assets/74173269-e916-4509-9b64-95a1b5baf4d5)
 
 #
