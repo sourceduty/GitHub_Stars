@@ -1,9 +1,15 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/GitHub_Stats.py", "use": "@vercel/python" }
+    {
+      "src": "api/GitHub_Stars.py",
+      "use": "@vercel/python"
+    }
   ],
   "routes": [
-    { "src": "/api/github-stats", "dest": "api/GitHub_Stats.py" }
+    {
+      "src": "/api/github-stars",
+      "dest": "api/GitHub_Stars.py"
+    }
   ]
 }
