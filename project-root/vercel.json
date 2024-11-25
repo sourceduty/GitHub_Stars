@@ -8,7 +8,7 @@
   ],
   "routes": [
     {
-      "src": "/api/github_stars",
+      "src": "/api/github-stats",
       "dest": "api/GitHub_Stars.py"
     }
   ]
