@@ -1,19 +1,14 @@
-import os
-import json
-import requests
 from flask import Flask, request, jsonify
+import requests
+import os
 
-# Initialize the Flask application
 app = Flask(__name__)
 
-# GitHub API URL
-GITHUB_API_URL = 'https://api.github.com'
-
-# Load GitHub token from environment variables
+GITHUB_API_URL = "https://api.github.com"
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 
-# Function to get user data
 def get_user_data(username):
+    """Fetch GitHub user data."""
     headers = {'Authorization': f'token {GITHUB_TOKEN}'}
     url = f'{GITHUB_API_URL}/users/{username}'
     response = requests.get(url, headers=headers)
@@ -22,79 +17,67 @@ def get_user_data(username):
     else:
         return {"error": response.status_code, "message": response.text}
 
-# Function to get user repositories
-def get_user_repositories(username):
+def get_repositories(username):
+    """Fetch repositories of the GitHub user."""
     headers = {'Authorization': f'token {GITHUB_TOKEN}'}
     url = f'{GITHUB_API_URL}/users/{username}/repos'
-    all_repos = []
-    page = 1
-    while True:
-        response = requests.get(f"{url}?page={page}", headers=headers)
-        if response.status_code == 200:
-            repos = response.json()
-            if not repos:
-                break
-            all_repos.extend(repos)
-            page += 1
-        else:
-            return {"error": response.status_code, "message": response.text}
-    
-    sorted_repos = sorted(all_repos, key=lambda repo: repo['stargazers_count'], reverse=True)
-    return sorted_repos
-
-# Function to get user contributions
-def get_user_contributions(username):
-    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
-    url = f'{GITHUB_API_URL}/users/{username}/events/public'
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
-        return response.json()
+        repos = response.json()
+        return [
+            {
+                "name": repo["name"],
+                "stars": repo["stargazers_count"],
+                "forks": repo["forks_count"]
+            }
+            for repo in repos
+        ]
     else:
         return {"error": response.status_code, "message": response.text}
 
-# API endpoint to fetch user statistics with repo star statistics
+def get_recent_contributions(username):
+    """Fetch recent contributions of the GitHub user."""
+    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
+    url = f'{GITHUB_API_URL}/users/{username}/events'
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        events = response.json()
+        return [
+            {"type": event["type"], "created_at": event["created_at"]}
+            for event in events if event["type"] == "PushEvent"
+        ]
+    else:
+        return {"error": response.status_code, "message": response.text}
+
 @app.route('/api/github-stats', methods=['GET'])
 def github_stats():
+    """API endpoint to fetch GitHub stats."""
     username = request.args.get('username')
     if not username:
         return jsonify({"error": "Username is required"}), 400
     
     user_data = get_user_data(username)
     if "error" in user_data:
-        return jsonify(user_data), user_data["error"]
-
-    repositories = get_user_repositories(username)
-    if isinstance(repositories, dict) and "error" in repositories:
-        return jsonify(repositories), repositories["error"]
-
-    contributions = get_user_contributions(username)
-    if isinstance(contributions, dict) and "error" in contributions:
-        return jsonify(contributions), contributions["error"]
+        return jsonify({"error": "Failed to fetch user data", "details": user_data}), 400
     
-    # Calculate total stars across all repositories
-    total_stars = sum(repo['stargazers_count'] for repo in repositories)
+    repositories = get_repositories(username)
+    if isinstance(repositories, dict) and "error" in repositories:
+        return jsonify({"error": "Failed to fetch repositories", "details": repositories}), 400
+    
+    recent_contributions = get_recent_contributions(username)
+    if isinstance(recent_contributions, dict) and "error" in recent_contributions:
+        return jsonify({"error": "Failed to fetch recent contributions", "details": recent_contributions}), 400
 
-    report = {
-        "user": {
-            "login": user_data.get("login"),
-            "name": user_data.get("name"),
-            "bio": user_data.get("bio"),
-            "public_repos": user_data.get("public_repos"),
-            "followers": user_data.get("followers"),
-            "following": user_data.get("following")
-        },
-        "repositories": [
-            {"name": repo["name"], "stars": repo["stargazers_count"], "forks": repo["forks_count"]}
-            for repo in repositories
-        ],
-        "total_stars": total_stars,  # Add total stars to the report
-        "recent_contributions": [
-            {"type": event["type"], "created_at": event["created_at"]}
-            for event in contributions[:5]
-        ]
+    response = {
+        "user": user_data,
+        "repositories": repositories,
+        "recent_contributions": recent_contributions,
+        "total_stars": sum(repo.get("stars", 0) for repo in repositories)
     }
-    return jsonify(report)
+    
+    return jsonify(response)
 
-# Vercel requires a main handler
-def handler(request, context=None):
-    return app(request, context)
+# Vercel compatibility
+def handler(event, context):
+    """Vercel handler for AWS Lambda compatibility."""
+    return app(event, context)
