@@ -1,105 +1,79 @@
 from flask import Flask, request, jsonify
 import requests
 import os
-import logging
 
 # Initialize Flask app
 app = Flask(__name__)
 
-# Logging setup
-logging.basicConfig(level=logging.DEBUG)
-
-# GitHub API configuration
+# GitHub API Base URL
 GITHUB_API_URL = "https://api.github.com"
-GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')  # Fetch token from environment variable
 
-# Check if token exists at startup
+# Get GitHub Token from Environment Variables
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+
 if not GITHUB_TOKEN:
-    logging.error("GITHUB_TOKEN is not set in the environment variables!")
+    raise ValueError("Missing GITHUB_TOKEN environment variable")
+
 
 @app.route('/api/github-stats', methods=['GET'])
 def github_stats():
-    """API endpoint to fetch GitHub stats."""
-    logging.debug("Received request at /api/github-stats")
-
-    # Fetch username from request
+    # Get the username from the query parameters
     username = request.args.get('username')
     if not username:
-        logging.error("No username provided in the request")
-        return jsonify({"error": "Username is required"}), 400
+        return jsonify({"error": "Username query parameter is required"}), 400
 
-    # Fetch user data
-    user_data = get_user_data(username)
-    if "error" in user_data:
-        return jsonify({"error": "Failed to fetch user data", "details": user_data}), 400
-
-    # Fetch repositories
-    repositories = get_repositories(username)
-    if isinstance(repositories, dict) and "error" in repositories:
-        return jsonify({"error": "Failed to fetch repositories", "details": repositories}), 400
-
-    # Prepare response
-    response = {
-        "user": user_data,
-        "repositories": repositories,
-        "total_stars": sum(repo.get("stars", 0) for repo in repositories)
+    # Headers for GitHub API authentication
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
     }
 
-    logging.debug(f"Response prepared: {response}")
-    return jsonify(response)
+    try:
+        # Fetch user data from GitHub API
+        user_response = requests.get(f"{GITHUB_API_URL}/users/{username}", headers=headers)
+        if user_response.status_code != 200:
+            return jsonify({"error": "Failed to fetch user data", "details": user_response.json()}), user_response.status_code
 
-def get_user_data(username):
-    """Fetch GitHub user data."""
-    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
-    url = f'{GITHUB_API_URL}/users/{username}'
-    response = requests.get(url, headers=headers)
+        user_data = user_response.json()
 
-    if response.status_code == 401:
-        logging.error("Unauthorized access: Check your GITHUB_TOKEN")
-        return {"error": 401, "message": "Unauthorized access. Check your GITHUB_TOKEN."}
-    elif response.status_code == 200:
-        return response.json()
-    else:
-        logging.error(f"Error fetching user data: {response.status_code} - {response.text}")
-        return {"error": response.status_code, "message": response.text}
+        # Fetch user's public repositories
+        repos_response = requests.get(f"{GITHUB_API_URL}/users/{username}/repos", headers=headers)
+        if repos_response.status_code != 200:
+            return jsonify({"error": "Failed to fetch repositories", "details": repos_response.json()}), repos_response.status_code
 
-def get_repositories(username):
-    """Fetch GitHub repositories."""
-    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
-    url = f'{GITHUB_API_URL}/users/{username}/repos'
-    response = requests.get(url, headers=headers)
+        repos_data = repos_response.json()
 
-    if response.status_code == 401:
-        logging.error("Unauthorized access: Check your GITHUB_TOKEN")
-        return {"error": 401, "message": "Unauthorized access. Check your GITHUB_TOKEN."}
-    elif response.status_code == 200:
-        repos = response.json()
-        return [
-            {
-                "name": repo["name"],
-                "stars": repo["stargazers_count"],
-                "forks": repo["forks_count"]
-            }
-            for repo in repos
-        ]
-    else:
-        logging.error(f"Error fetching repositories: {response.status_code} - {response.text}")
-        return {"error": response.status_code, "message": response.text}
+        # Calculate total stars and prepare detailed repository stats
+        total_stars = sum(repo.get('stargazers_count', 0) for repo in repos_data)
+        repositories = [{"name": repo["name"], "stars": repo.get("stargazers_count", 0), "forks": repo.get("forks_count", 0)} for repo in repos_data]
 
-# Local testing endpoint to verify token
-@app.route('/api/check-token', methods=['GET'])
-def check_token():
-    """Endpoint to validate GitHub token."""
-    headers = {'Authorization': f'token {GITHUB_TOKEN}'}
-    url = f'{GITHUB_API_URL}/user'
-    response = requests.get(url, headers=headers)
+        # Fetch user's recent activity
+        events_response = requests.get(f"{GITHUB_API_URL}/users/{username}/events", headers=headers)
+        if events_response.status_code != 200:
+            return jsonify({"error": "Failed to fetch recent contributions", "details": events_response.json()}), events_response.status_code
 
-    if response.status_code == 401:
-        return jsonify({"error": "Invalid or missing GITHUB_TOKEN"}), 401
-    elif response.status_code == 200:
-        return jsonify({"message": "Token is valid", "user": response.json()}), 200
-    else:
-        return jsonify({"error": response.status_code, "message": response.text}), 400
+        events_data = events_response.json()
+        recent_contributions = [{"type": event.get("type"), "created_at": event.get("created_at")} for event in events_data[:5]]
 
-if __name__ == "__main__":
+        # Prepare and return final response
+        return jsonify({
+            "user": {
+                "login": user_data.get("login"),
+                "name": user_data.get("name"),
+                "bio": user_data.get("bio"),
+                "followers": user_data.get("followers"),
+                "following": user_data.get("following"),
+                "public_repos": user_data.get("public_repos")
+            },
+            "repositories": repositories,
+            "total_stars": total_stars,
+            "recent_contributions": recent_contributions
+        })
+
+    except Exception as e:
+        return jsonify({"error": "An unexpected error occurred", "details": str(e)}), 500
+
+
+if __name__ == '__main__':
+    # Run the Flask app for local testing
     app.run(debug=True)
