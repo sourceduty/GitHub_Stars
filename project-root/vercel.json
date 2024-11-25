@@ -3,7 +3,8 @@
   "builds": [
     {
       "src": "api/GitHub_Stars.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": { "runtime": "python3.9" }
     }
   ],
   "routes": [
