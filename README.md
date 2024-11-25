@@ -35,6 +35,10 @@ This application provides an API to fetch GitHub user statistics, deployed using
 - Displays recent public contributions.
 
 #
+
+> Alex: "*I need to come back to this.*"
+
+#
 ### Related Links
 
 [GitHub](https://github.com/sourceduty/GitHub)
