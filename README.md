@@ -10,7 +10,7 @@ The design emphasizes simplicity and ease of use, with features like dynamic out
 #
 ### Partial Development
 
-![Vercel](https://github.com/user-attachments/assets/4d57db81-dd39-4e41-b2c9-3ae52f63ff60)
+![Vercel](https://github.com/user-attachments/assets/d51592ca-5a0e-4d0f-939c-cc87c5c1d120)
 
 The development process on Vercel leverages its serverless infrastructure, which simplifies deployment but requires specific configurations to support Python applications like this one. During partial development, challenges such as compatibility between Flask and Vercel's serverless functions arose. The program needs refinements to align with Vercel's environment, including routing fixes and dependency adjustments. To achieve full functionality, integration with GitHub's REST API or GraphQL API is required, allowing users to fetch actual data. Expanding the program could include adding authentication for private repositories, handling rate limits, and improving the UI with real-time updates. These improvements will transform the program into a robust tool for GitHub repository analysis.
 
