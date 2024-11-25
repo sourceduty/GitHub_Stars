@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/github_stats.py",
+      "src": "api/GitHub_Stats.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/api/github-stats",
-      "dest": "api/github_stats.py"
+      "dest": "api/GitHub_Stats.py"
     }
   ]
 }
