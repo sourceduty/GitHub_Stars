@@ -52,7 +52,7 @@ def get_user_contributions(username):
     else:
         return {"error": response.status_code, "message": response.text}
 
-# API endpoint to fetch user statistics
+# API endpoint to fetch user statistics with repo star statistics
 @app.route('/api/github-stats', methods=['GET'])
 def github_stats():
     username = request.args.get('username')
@@ -71,6 +71,9 @@ def github_stats():
     if isinstance(contributions, dict) and "error" in contributions:
         return jsonify(contributions), contributions["error"]
     
+    # Calculate total stars across all repositories
+    total_stars = sum(repo['stargazers_count'] for repo in repositories)
+
     report = {
         "user": {
             "login": user_data.get("login"),
@@ -84,6 +87,7 @@ def github_stats():
             {"name": repo["name"], "stars": repo["stargazers_count"], "forks": repo["forks_count"]}
             for repo in repositories
         ],
+        "total_stars": total_stars,  # Add total stars to the report
         "recent_contributions": [
             {"type": event["type"], "created_at": event["created_at"]}
             for event in contributions[:5]
