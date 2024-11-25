@@ -7,6 +7,11 @@ This program, GitHub Stars Tracker, is designed to provide an intuitive interfac
 
 The design emphasizes simplicity and ease of use, with features like dynamic output rendering and a clear separation of routes for specific tasks. However, the stats fetching logic is currently simulated and needs to be connected to the GitHub API for real-time data. The HTML interface is a starting point for more advanced user interaction, such as sorting, filtering, or visualizing stats in charts. This foundational program showcases modularity and adaptability, paving the way for further enhancements.
 
+#
+### Partial Development
+
+![Vercel](https://github.com/user-attachments/assets/4d57db81-dd39-4e41-b2c9-3ae52f63ff60)
+
 The development process on Vercel leverages its serverless infrastructure, which simplifies deployment but requires specific configurations to support Python applications like this one. During partial development, challenges such as compatibility between Flask and Vercel's serverless functions arose. The program needs refinements to align with Vercel's environment, including routing fixes and dependency adjustments. To achieve full functionality, integration with GitHub's REST API or GraphQL API is required, allowing users to fetch actual data. Expanding the program could include adding authentication for private repositories, handling rate limits, and improving the UI with real-time updates. These improvements will transform the program into a robust tool for GitHub repository analysis.
 
 #
