@@ -1,12 +1,11 @@
 from flask import Flask, request, render_template_string, jsonify
 import requests
-import os
 
 app = Flask(__name__)
 
 GITHUB_API_URL = "https://api.github.com"
 
-# HTML Template with enhanced features
+# HTML Template with enhanced UI
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -19,7 +18,7 @@ HTML_TEMPLATE = """
     <h1>GitHub Stars Tracker</h1>
     <form method="GET" action="/api/github-stats">
         <label for="repo">Enter GitHub Repository (e.g., owner/repo):</label><br><br>
-        <input type="text" id="repo" name="repo" placeholder="e.g., tensorflow/tensorflow"><br><br>
+        <input type="text" id="repo" name="repo" placeholder="e.g., tensorflow/tensorflow" required><br><br>
         <label for="token">Enter Personal Access Token (optional):</label><br><br>
         <input type="text" id="token" name="token" placeholder="GitHub Personal Access Token"><br><br>
         <button type="submit">Fetch Stats</button>
@@ -32,24 +31,15 @@ HTML_TEMPLATE = """
 
 @app.route("/", methods=["GET"])
 def home():
-    """
-    Render the home page with an input form and output area.
-    """
-    return render_template_string(HTML_TEMPLATE, output="")
+    return render_template_string(HTML_TEMPLATE, output="Welcome! Enter a repository to get started.")
 
 @app.route("/api/github-stats", methods=["GET"])
 def github_stats():
-    """
-    Fetch GitHub repository stats using the GitHub API.
-    """
     repo = request.args.get("repo", None)
     token = request.args.get("token", None)
 
     if not repo:
-        return render_template_string(
-            HTML_TEMPLATE,
-            output="Error: Please provide a valid GitHub repository name (e.g., owner/repo)."
-        )
+        return render_template_string(HTML_TEMPLATE, output="Error: Repository name is required.")
 
     headers = {}
     if token:
@@ -72,6 +62,8 @@ def github_stats():
         )
     elif response.status_code == 404:
         output = f"Error: Repository '{repo}' not found."
+    elif response.status_code == 403:
+        output = "Error: Rate limit exceeded. Please provide a valid GitHub token."
     else:
         output = f"Error: Unable to fetch data. Status Code: {response.status_code}"
 
@@ -79,9 +71,6 @@ def github_stats():
 
 @app.route("/api/rate-limit", methods=["GET"])
 def rate_limit():
-    """
-    Check the GitHub API rate limit.
-    """
     token = request.args.get("token", None)
     headers = {}
     if token:
