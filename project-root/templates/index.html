@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GitHub Stars Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>GitHub Stars Tracker</h1>
+    <form method="GET" action="/api/github-stats">
+        <label for="repo">GitHub Repository (e.g., owner/repo):</label><br>
+        <input type="text" id="repo" name="repo" required><br>
+        <label for="token">Personal Access Token (optional):</label><br>
+        <input type="text" id="token" name="token"><br>
+        <button type="submit">Fetch Stats</button>
+    </form>
+    <pre>{{ output }}</pre>
+</body>
+</html>
