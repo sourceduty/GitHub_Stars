@@ -2,7 +2,7 @@
   "version": 2,
   "routes": [
     {
-      "src": "/api/github-stats",
+      "src": "/github-stats",
       "dest": "api/GitHub_Stars.py"
     }
   ]
