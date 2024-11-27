@@ -113,7 +113,7 @@ project-root/
 [GitHub](https://github.com/sourceduty/GitHub)
 
 #
-![Active Development](https://github.com/user-attachments/assets/8c7cee43-3c51-4741-a101-c3bbb9ae21a7)
+![Delayed](https://github.com/user-attachments/assets/d16fbf16-59aa-4cc1-b9b4-aa2beaf2c023)
 
 ***
 Copyright (C) 2024, Sourceduty - All Rights Reserved.
