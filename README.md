@@ -104,6 +104,8 @@ project-root/
 
 #
 ![vercel_login](https://github.com/user-attachments/assets/74173269-e916-4509-9b64-95a1b5baf4d5)
+#
+![Stars](https://github.com/user-attachments/assets/1838073c-0a81-4b76-83c5-d1572057b51b)
 
 #
 ### Related Links
